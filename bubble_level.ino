@@ -3,6 +3,7 @@
 /**
  * Controlling software of an electronic bubble level, designed for mounting on a hat :)
  * It uses 9 LEDs in an L-shape to display the 2-dimensional position of the bubble based on values read from a MPU-6050 accelerometer via I2C.
+ * The code for interacting with the accelerometer is heavily inspired by the examples at https://playground.arduino.cc/Main/MPU-6050/#short
  */
 
 /**
@@ -41,12 +42,12 @@ const uint8_t all_leds[NUM_LEDS] = {
 };
 
 /**
- * This determines the poll rate to the acceleration sensor and 
+ * This determines the poll rate to the acceleration sensor.
  */
 #define DELAY_TIME 70
 
 /**
- * This determines the speed of the running light on bootup
+ * This determines the speed of the running light on bootup.
  */
 #define BOOT_DELAY 100
 
@@ -108,7 +109,7 @@ void fetch_acc(void) {
   Wire.endTransmission(false);
   Wire.requestFrom(MPU_addr,4,true);  // request a total of 4 registers
   AcX = Wire.read() << 8;
-  AcX = AcX | Wire.read();  // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)    
+  AcX = AcX | Wire.read();  // 0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)
   AcY = Wire.read() << 8;
   AcY = AcY | Wire.read();  // 0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
   // more could be read here.
@@ -127,7 +128,7 @@ void setup_leds(void) {
 }
 
 /**
- * Write the values from the dimension arrays to the LEDs. 
+ * Write the values from the dimension arrays to the LEDs.
  * Better not have too many set to 1 at the same time to not blast the maximal total current rating of the Arduino.
  */
 void write_led_vals(void) {
@@ -172,7 +173,7 @@ void run_leds(void) {
     delay(BOOT_DELAY);
   }
   clear_led_vals();
-  write_led_vals();  
+  write_led_vals();
 }
 
 /**
@@ -215,7 +216,7 @@ void loop(void) {
   // avoid rapidly jumping LEDs to make transitions look smoother
   current_x += SIGNUM(target_x - current_x);
   current_y += SIGNUM(target_y - current_y);
-  
+
   clear_led_vals();
   x_led_vals[current_x] = 1;
   y_led_vals[current_y] = 1;
